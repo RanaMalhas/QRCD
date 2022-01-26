@@ -1,1 +1,1 @@
-Details comin soon!
+Details coming soon!
