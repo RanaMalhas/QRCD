@@ -1,1 +1,1 @@
-Model detials and weights will be released soon!
+Model details and weights will be released soon!
