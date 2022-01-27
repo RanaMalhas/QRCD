@@ -1,0 +1,662 @@
+""" Official evaluation script for v1.1 of the QRCD dataset. """
+
+from __future__ import print_function
+from farasa.segmenter import FarasaSegmenter #added on June 1, 2021
+
+import collections
+from collections import Counter
+import string
+import re
+import argparse
+import json
+import sys
+import tensorflow as tf
+
+#global variables
+stopWords={'من','الى','إلى','عن','على','في','حتى'}
+
+def _is_punctuation(c):
+    exclude = set(string.punctuation)
+    exclude.add('،')
+    exclude.add('؛')
+    exclude.add('؟')
+    if c in exclude:
+        return True
+    return False
+
+def normalize_answer_wAr(s):
+    """remove punctuation, some stopwords and extra whitespace."""
+    #might consider cleaning prefixes here
+    def remove_stopWords(text):
+        terms = []
+        # must take care of the prefixes first
+        # stopWords = {'من', 'الى', 'إلى', 'عن', 'على', 'في', 'حتى'} ## defined globally
+        for term in text.split():
+            if term not in stopWords:
+                terms.append(term)
+        return " ".join(terms)
+
+    def remove_articles(text):
+        return re.sub(r'\b(a|an|the)\b', ' ', text)
+
+    def white_space_fix(text):
+        return ' '.join(text.split())
+
+    def remove_punc_wAr(text): ## rana: arabic comma, semicolon and question mark
+        exclude = set(string.punctuation)
+        exclude.add('،')
+        exclude.add('؛')
+        exclude.add('؟')
+        return ''.join(ch for ch in text if ch not in exclude)
+
+    def lower(text):
+        return text.lower()
+    return white_space_fix(remove_stopWords(remove_punc_wAr(s)))
+
+def normalize_answers_wAr(ss):
+    """remove punctuation, some stopwords and extra whitespace."""
+    cleaned_ss=[]
+    for s in ss:
+        s = normalize_answer_wAr(s)
+        cleaned_ss.append(s)
+    return cleaned_ss
+
+def normalize_answer(s):
+    """Lower text and remove punctuation, articles and extra whitespace."""
+    def remove_articles(text):
+        return re.sub(r'\b(a|an|the)\b', ' ', text)
+
+    def white_space_fix(text):
+        return ' '.join(text.split())
+
+    def remove_punc(text):
+        exclude = set(string.punctuation)
+        return ''.join(ch for ch in text if ch not in exclude)
+
+    def lower(text):
+        return text.lower()
+
+    return white_space_fix(remove_articles(remove_punc(lower(s))))
+
+
+def f1_score(prediction_tokensIds, ground_truth_tokensIds):
+
+    common = Counter(prediction_tokensIds) & Counter(ground_truth_tokensIds)
+    num_same = sum(common.values())
+    if num_same == 0:
+        return 0
+    precision = 1.0 * num_same / len(prediction_tokensIds)
+    recall = 1.0 * num_same / len(ground_truth_tokensIds)
+    f1 = (2 * precision * recall) / (precision + recall)
+    return f1
+
+def pAP_score(mScores, ranks, gold_spans_set):
+    ## Computing partial average precision
+    score = 0.0
+    partialHits = 0.0
+    for mScore, rank in zip(mScores, ranks):
+        if mScore != 0:
+            partialHits = partialHits + mScore
+            score += partialHits / rank
+    return score / len(gold_spans_set) # pAP
+
+
+def mySort(dictionary, keyOrder):
+    for cntxt_qid, valueTuples in dictionary.items():
+        valueTuples.sort(key=lambda x:x[keyOrder])
+    return dictionary #sorted_dictionary
+
+def construct_char_to_word_offset(paragraph_text):
+    doc_tokens = paragraph_text.strip().split()
+    char_to_word_offset = []
+    for i, token in enumerate(doc_tokens):
+        for c in token:
+            char_to_word_offset.append(i)
+        char_to_word_offset.append(i) # for the whitespace
+    return char_to_word_offset
+
+def remove_prefixes_in_text(text):
+    text_tokens = farasa_segmenter.segment(text).split()
+    tokens = []
+    for token in text_tokens:
+
+        token = re.sub(r'^و[+]', '', token)  # only begining of words
+        token = re.sub(r'^ف[+]', '', token)
+        token = re.sub(r'^ب[+]', '', token)
+        token = re.sub(r'^ك[+]', '', token)
+        token = re.sub(r'^ل[+]', '', token)
+        token = re.sub(r'^لل[+]', '', token)
+        token = re.sub(r'^ال[+]', '', token)
+
+        # defragment by removing pluses
+        token = re.sub(r'[+]', '', token)  # remove pluses
+        tokens.append(token)
+    return " ".join(tokens)
+
+def remove_prefixes(answers):
+    # prefixes = {
+    # 	// "ال", "و", "ف", "ب", "ك", "ل", "لل"
+    # 			"" + ALEF + LAM, "" + WAW, "" + FEH, "" + BEH, "" + KAF, "" + LAM, "" + LAM + LAM
+    # }
+    farasa_answers = []
+    for answer in answers:
+        answerToAppend = remove_prefixes_in_text(answer)
+        farasa_answers.append(answerToAppend)
+    return farasa_answers
+
+# should get rid of all adjust methods and normalize both pred and gold on the fly
+def adjust_start(org_text, org_start):
+    '''
+    :param org_text: must receive org_text after removing prefixes
+    :param org_start:
+    :return:
+    '''
+    start = org_start
+    text_terms = org_text.split()
+    lastIsPunct = False
+    lastIsStopWord = False
+    for i, term in enumerate(text_terms):
+        if i > org_start:
+            if lastIsPunct or lastIsStopWord:
+                start = start + 1
+            break
+        #check if stopword
+        if term in stopWords:
+            start = start - 1
+            lastIsStopWord = True
+        else:
+            lastIsStopWord = False
+
+        if _is_punctuation(term):
+            start = start - 1
+            lastIsPunct = True
+        else:
+            lastIsPunct = False
+    return start
+
+def adjust_end(org_text, org_end):
+    '''
+    :param org_text: must receive org_text after removing prefixes to match punctuation
+    :param org_end:
+    :return:
+    '''
+    end = org_end
+    text_terms = org_text.split()
+    for i, term in enumerate(text_terms):
+        if i > org_end:
+            break
+        if term in stopWords or _is_punctuation(term):
+            end = end - 1
+    return end
+
+
+def construct_text_from_range(span_range, parag_text):
+    doc_tokens = parag_text.strip().split()
+    span_tokenIds = list(span_range)
+    span_tokens =[]
+    for indx in span_tokenIds:
+        span_tokens.append(doc_tokens[indx])
+    return " ".join(span_tokens)
+
+def load_gold_spans(dataset):
+    gold_spans_in_cntxt_qids_list = collections.defaultdict(list)
+    gold_spans_ranges_in_cntxt_qids = collections.defaultdict(list)
+    contexts = {}
+    all_qa_pairs =0
+    for article in dataset:
+        for paragraph in article['paragraphs']:
+            org_paragraph_text = paragraph['context']
+            char_to_word_offset = construct_char_to_word_offset(org_paragraph_text)
+            # paragraph_text = paragraph['context']
+            # paragraph_text = remove_prefixes_in_text(paragraph_text)
+            # paragraph_text = normalize_answer_wAr(paragraph_text) # paragraph_text = remove_some_stopWords_in_text(paragraph_text)
+            # char_to_word_offset = construct_char_to_word_offset(paragraph_text)
+
+            for qa in paragraph['qas']:
+                contexts[qa['id']] = org_paragraph_text # added for range overlap.
+                org_paragraph_text = remove_prefixes_in_text(org_paragraph_text)
+
+                ground_truths = list(map(lambda x: x['text'], qa['answers']))
+                all_qa_pairs = all_qa_pairs + len(ground_truths)
+                gold_span_offsets = list(map(lambda x: x['answer_start'], qa['answers']))
+                for gold_span, gold_span_offset in zip(ground_truths, gold_span_offsets):
+                    org_start_position = char_to_word_offset[gold_span_offset]
+                    org_end_position = char_to_word_offset[gold_span_offset + len(gold_span) - 1]
+
+                    # adjust the start/end token positions to cater for stopwords removal - should remove this
+                    adj_start_position = adjust_start(org_paragraph_text, org_start_position)
+                    adj_end_position = adjust_end(org_paragraph_text, org_end_position)
+                    gold_span = remove_prefixes_in_text(gold_span)
+                    gold_span = normalize_answer_wAr(gold_span)
+                    gold_spans_ranges_in_cntxt_qids[qa['id']].append((gold_span, adj_start_position, adj_end_position))
+
+                ground_truths = remove_prefixes(ground_truths)
+                #ground_truths = remove_some_stopWords(ground_truths)  ## added Sep 6, 2021
+                ground_truths = normalize_answers_wAr(ground_truths)  ## added oct 26, 2021
+                gold_spans_in_cntxt_qids_list[qa['id']] = ground_truths ## including all occurrences, if applicable
+
+    sortByKeyOrder = 1 # sort by start_position
+    gold_spans_ranges_in_cntxt_qids = mySort(gold_spans_ranges_in_cntxt_qids, sortByKeyOrder)
+
+    return gold_spans_in_cntxt_qids_list, gold_spans_ranges_in_cntxt_qids, contexts, all_qa_pairs
+
+def load_pred_spans(nbest_predictions, contexts):
+
+    # Will hold all predicated spans in nbest_predictions file
+    all_pred_spans_ranges_in_cntxt_qids = collections.defaultdict(list)
+
+    for cntxt_qid, nbest_predictions_4cntxt_qid in nbest_predictions.items():
+        org_paragraph_text = contexts[cntxt_qid]
+        org_paragraph_text = remove_prefixes_in_text(org_paragraph_text)
+
+        paragraph_text = contexts[cntxt_qid]
+        paragraph_text = remove_prefixes_in_text(paragraph_text)
+        paragraph_text = normalize_answer_wAr(paragraph_text) # if not used remove
+        # char_to_word_offset = construct_char_to_word_offset(paragraph_text)
+
+        # pred_spans_num_4cutoff=0
+        for nbest_prediction_4cntxt_qid in nbest_predictions_4cntxt_qid:
+            span = nbest_prediction_4cntxt_qid['text']
+            span = remove_prefixes_in_text(span)
+            span = normalize_answer_wAr(span)
+
+            #get the start/end token positions predicted in nbest_predictions
+            org_span = nbest_prediction_4cntxt_qid['text'] # used only for printing
+            org_start_index = nbest_prediction_4cntxt_qid['orig_start_index']
+            org_end_index= nbest_prediction_4cntxt_qid['orig_end_index']
+
+            # adjust start/end token positions to cater for stopwords removal
+            adj_start_position = adjust_start(org_paragraph_text, org_start_index)
+            adj_end_position = adjust_end(org_paragraph_text, org_end_index)
+            if len(span.split())==0 or  adj_start_position > adj_end_position:
+                # noisy showing all paragraph
+                # print("\nWarning for %s: could not find original predicted answer %s in \nparagraph after removing prefixes and stopwords %s" % (
+                #     cntxt_qid, org_span, paragraph_text))
+                # less noisy
+                # print("\nWarning for %s: could not find original predicted answer %s" % (
+                #     cntxt_qid, org_span))
+                continue
+
+            #Use the actual returned start/end token positions of predicted answer from nbest_predictions file
+            start_position = adj_start_position
+            end_position = adj_end_position
+
+            prob = nbest_prediction_4cntxt_qid['probability']
+            all_pred_spans_ranges_in_cntxt_qids[cntxt_qid].append((span, prob, start_position, end_position))
+    return all_pred_spans_ranges_in_cntxt_qids
+
+def compute_atk_splitMatchingScores(gold_spans_ranges_in_cntxt_qids, all_pred_spans_ranges_in_cntxt_qids, cutoff_rank, contexts):
+
+    splitMatching_f1Scores_atk= collections.defaultdict(list)
+    matching_f1Scores_at1 = collections.defaultdict(list)
+
+    split_PredSpans = collections.defaultdict(list)
+    split_PredSpans_reranked = collections.defaultdict(list)
+
+    for cntxt_qid, values in all_pred_spans_ranges_in_cntxt_qids.items():
+
+        #needed to construct the answer spans from corresponding ranges
+        paragraph_text = contexts[cntxt_qid]
+        paragraph_text = remove_prefixes_in_text(paragraph_text)
+        paragraph_text = normalize_answer_wAr(paragraph_text)
+
+        pre_split_PredSpans = collections.defaultdict(list)
+        pred_spans, probs, pred_start_postions, pred_end_positions = zip(*values)
+        gold_spans_list, gold_start_postions, gold_end_positions = zip(*gold_spans_ranges_in_cntxt_qids[cntxt_qid])
+
+        # 0. Compute matching score at rank1 for EM and F1@1
+        pred_span = pred_spans[0]
+        maxf1_at1 = 0.0
+        maxMatched_gold_span = None
+        pred_span_tokenIds = list(range(pred_start_postions[0], pred_end_positions[0] + 1))
+
+        for indy, gold_span in enumerate(gold_spans_list):
+                gold_span_tokenIds = set(range(gold_start_postions[indy], gold_end_positions[indy] + 1))
+
+                f1_at1 = f1_score(pred_span_tokenIds, gold_span_tokenIds)
+                if f1_at1 > maxf1_at1:
+                    maxf1_at1 = f1_at1
+                    maxMatched_gold_span = gold_span
+        matching_f1Scores_at1[cntxt_qid].append((pred_span, maxMatched_gold_span, maxf1_at1))
+
+        # 1. for each pred_span find all overlaps with gold_spans
+        overallRank = 0
+        for i, pred_span in enumerate(pred_spans):
+            rank = i + 1
+            if rank > int(cutoff_rank):
+                break
+            overallRank += 1
+
+            #verify if needed
+            if pred_span==None:
+                pre_split_PredSpans[pred_span].append((None, None , range(0), range(0), overallRank))
+                continue
+
+            pred_range = range(pred_start_postions[i], pred_end_positions[i] + 1)
+            gold_span_matches=0
+            for j, gold_span in enumerate(gold_spans_list):
+                gold_range = range(gold_start_postions[j], gold_end_positions[j] + 1)
+
+                # Compute the range overlap between the prediction and each gold answer
+                #overlap = pred_range_set & gold_range_set # set intersection using &
+                #overlap = pred_range_set.intersection(gold_range_set) # set intersection using method intersection
+                pred_gold_overlap = range(max(pred_range[0], gold_range[0]), min(pred_range[-1], gold_range[-1]) + 1)
+                if len(pred_gold_overlap)!=0:
+                    pre_split_PredSpans[pred_span].append((pred_range, gold_span, gold_range, pred_gold_overlap, overallRank))
+                    gold_span_matches+=1
+            if gold_span_matches==0:
+                # Avoid adding a None match if the pred_span happens to match a span in the gold-answer
+                # but it is not in the correct position in the context
+                if pred_span not in  pre_split_PredSpans:
+                    pre_split_PredSpans[pred_span].append((pred_range, None, range(0), range(0), overallRank))
+
+        #2. for each pred_span that match multiple gold_spans make breaks and make sure to store the rank
+        for pred_span1, ranges1 in pre_split_PredSpans.items():
+            pred_ranges1, gold_spans1, gold_ranges1, pred_gold_overlaps1, ranks1 = zip(*ranges1)
+
+            # 2.1. pred_span matches only one gold_span => no splitting needed
+            if len(gold_spans1) == 1 and gold_spans1[0] is not None:
+                split_PredSpans[cntxt_qid].append(
+                    (pred_span1, pred_ranges1[0], gold_spans1[0], gold_ranges1[0], pred_gold_overlaps1[0], float(ranks1[0])))
+                continue
+
+            # 2.2 split pred_span across matched gold_spans (horizontally)
+            # overlap1 is the pred_gold_overlap with current encountered gold_span
+            # overlap2 is the pred_gold_overlap with next encountered gold_span
+
+            # rank_offset is used to give temporary ranks to predictions to be split
+            rank_original = float(ranks1[0])
+            rank_offset = 1.0/(len(gold_spans1)+1)
+            pred_ranges1_crnt = list(pred_ranges1)
+
+            pred_span_1st_range = range(0)
+            pred_span_2nd_range = range(0)
+            pred_span_1st_text = None
+            pred_span_2nd_text = None
+            for k, overlap1 in enumerate(pred_gold_overlaps1):
+
+                #case when pred_span has no match with any gold-span
+                if gold_spans1[k] is None:  # and (len(gold_spans1)==0 or len(gold_spans1))==1: => did not work
+                    split_PredSpans[cntxt_qid].append(
+                        (pred_span1, pred_ranges1[k], None, range(0), range(0), float(ranks1[k])))
+                    continue
+                l = k+1
+                if l >= len(pred_gold_overlaps1):
+                    continue
+
+                # case when two predicted spans become the same after processing e.g. 27:20-28\t232 سبا
+                # Each predicted answer has its own rank
+                if gold_spans1[k] == gold_spans1[l]: # another case for not splitting
+                    split_PredSpans[cntxt_qid].append(
+                        (pred_span1, pred_ranges1[k], gold_spans1[k], gold_ranges1[k], pred_gold_overlaps1[k],
+                         float(ranks1[k])))
+                    split_PredSpans[cntxt_qid].append(
+                        (pred_span1, pred_ranges1[l], gold_spans1[l], gold_ranges1[l], pred_gold_overlaps1[l],
+                         float(ranks1[l])))
+                    continue
+
+                # When pred_span1 matches more than 2 gold_spans, slide pred_ranges1_crnt
+                if pred_span_2nd_text != None:
+                    temp_pred_split_spans = split_PredSpans.pop(cntxt_qid)
+                    temp_pred_split_spans = temp_pred_split_spans[:-1]
+                    split_PredSpans[cntxt_qid]=temp_pred_split_spans
+                    pred_ranges1_crnt[l-1] = pred_span_2nd_range # l-1 is k
+                    rank_offset = rank_offset + 0.05
+
+                overlap2 = pred_gold_overlaps1[l]
+                # print("overlap2 = %s" % overlap2 )
+                #
+                # for gld_span, gld_range in zip(gold_spans1, gold_ranges1):
+                #     print ("gld_range=%s, gld_span=%s " %(gld_range, gld_span))
+
+                # Another case for no splitting:
+                # when the same predicted answer partially matches two overlapping gold answers
+                # print(len(range(max(overlap1[0], overlap2[0]), min(overlap1[-1], overlap2[-1]) + 1)))
+                # assert len(range(max(overlap1[0], overlap2[0]), min(overlap1[-1], overlap2[-1]) + 1))==0
+                if len(range(max(overlap1[0], overlap2[0]), min(overlap1[-1], overlap2[-1]) + 1)) != 0:
+                    # print("Warning: For cntxt_qid=%s, predicted span@%d: %s \nOverlap between gold answers exists,"
+                    #       " the predicted answer will not be split. Match with better matched gold answer" % (cntxt_qid, ranks1[k], pred_span1))
+                    # gold_spans_set = set(gold_spans1)
+                    # print("%s\tpredicted span@%d\t%s\t%d\t%d\t%s\t%s" % (cntxt_qid, ranks1[k], pred_span1, len(gold_spans_set), len(gold_spans1), gold_spans1[k], gold_ranges1[k]))
+
+                    # Decide which is a better match using F1 over range overlap and append the better one on the fly
+                    prdTokens = list(pred_ranges1[k])
+                    gldTokens1st = list(gold_ranges1[k])
+                    gldTokens2nd = list(gold_ranges1[l])
+                    f1_w1st_gold = f1_score(prdTokens, gldTokens1st)
+                    f1_w2nd_gold = f1_score(prdTokens, gldTokens2nd)
+                    if f1_w1st_gold >= f1_w2nd_gold:
+                        split_PredSpans[cntxt_qid].append(
+                        (pred_span1, pred_ranges1[k], gold_spans1[k], gold_ranges1[k], pred_gold_overlaps1[k],
+                         float(ranks1[k])))
+                    else:
+                        split_PredSpans[cntxt_qid].append(
+                        (pred_span1, pred_ranges1[l], gold_spans1[l], gold_ranges1[l], pred_gold_overlaps1[l],
+                         float(ranks1[l])))
+                    continue
+
+                # split pred_span into two parts in every loop-round at a time
+                # compute range in between pred_gold_overlaps1 (overlap1 and overlap2)
+                range_in_between = range(overlap1[-1]+1, overlap2[0])
+                if len(range_in_between)==0:
+                    pred_span_1st_range = range(pred_ranges1_crnt[k][0], overlap1[-1] + 1)
+                    pred_span_2nd_range = range(overlap2[0], pred_ranges1_crnt[l][-1]+1)
+                else:
+                    tokens_in_between = list(range_in_between)
+                    #tokens_in_between = sorted(tokens_in_between) # not sure if sorting is needed
+                    m = (len(tokens_in_between) // 2)   # integer division
+
+                    pred_span_1st_range = range(pred_ranges1_crnt[k][0], tokens_in_between[m])
+                    pred_span_2nd_range = range(tokens_in_between[m], pred_ranges1_crnt[l][-1] + 1)
+
+                # print("paragraph: %s" %paragraph_text)
+                pred_span_1st_text = construct_text_from_range(pred_span_1st_range, paragraph_text)
+                pred_span_2nd_text = construct_text_from_range(pred_span_2nd_range, paragraph_text)
+
+                # New temporary ranks to be used in re-ranking pred_spans
+                rank_1st = rank_original + rank_offset
+                rank_2nd = rank_1st + rank_offset
+
+                split_PredSpans[cntxt_qid].append(
+                            (pred_span_1st_text, pred_span_1st_range, gold_spans1[k], gold_ranges1[k], pred_gold_overlaps1[k], rank_1st))
+                split_PredSpans[cntxt_qid].append(
+                            (pred_span_2nd_text,pred_span_2nd_range, gold_spans1[l], gold_ranges1[l], pred_gold_overlaps1[l], rank_2nd))
+
+        #3.1 Sort by rank (verify if needed because the ranks are assigned in order)
+        sortByKeyOrder = 5
+        split_PredSpans = mySort(split_PredSpans, sortByKeyOrder)
+
+        #3.2 rerank converting float ranks into consecutive integer ranks
+        split_pred_spans = split_PredSpans[cntxt_qid]
+        split_pred_spans_reranked = []
+        for rnk, split_pred_span in enumerate(split_pred_spans):
+            v1, v2, v3, v4, v5, rankflt = split_pred_span
+            newRank = rnk + 1
+            split_pred_spans_reranked.append((v1, v2, v3, v4, v5, newRank))
+        split_PredSpans_reranked[cntxt_qid]= split_pred_spans_reranked
+
+        #3.3 For each split pred_span find maxMatched gold span (as before) but using F1 over range overlap
+        #    Since the stored gold_span information have not been used (so far), verify if they need to be removed from the tuple
+        split_pred_spans1, split_pred_ranges1, _, _, _, splitRanks1 = zip(*split_pred_spans_reranked)
+
+        # Next: Max match each split pred_answer with a gold-answer
+        #       and remove all occurrences of that matched gold answer (must verify)
+
+        unmatched_gold_start_postions = list(gold_start_postions).copy()
+        unmatched_gold_end_positions = list(gold_end_positions).copy()
+        unmatched_gold_spans = list(gold_spans_list).copy()
+        for indx, split_pred_span1 in enumerate(split_pred_spans1):
+            rank = splitRanks1[indx]
+            maxf1 = 0.0
+            maxMatched_gold_span = None
+
+            #verify if needed for atk computation
+            if split_pred_span1==None:
+                splitMatching_f1Scores_atk[cntxt_qid].append(
+                    (None, None, 0.0, rank))
+                continue
+
+            split_pred_span1_tokenIds = list(split_pred_ranges1[indx])
+            for indy, gold_span in enumerate(unmatched_gold_spans):
+                # gold_ranges1 can be used instead of the start and end positions
+                gold_span_tokenIds = set(range(unmatched_gold_start_postions[indy], unmatched_gold_end_positions[indy]+1))
+                f1 = f1_score(split_pred_span1_tokenIds, gold_span_tokenIds)
+                if f1 > maxf1:
+                    maxf1 = f1
+                    maxMatched_gold_span = gold_span
+
+            if maxf1!=0:
+                # Remove all occurences of a gold_span, if applicable
+                for gold in gold_spans_list:
+                    if gold == maxMatched_gold_span and gold in unmatched_gold_spans:
+                        indg = unmatched_gold_spans.index(maxMatched_gold_span)
+                        unmatched_gold_spans.pop(indg)
+                        unmatched_gold_start_postions.pop(indg)
+                        unmatched_gold_end_positions.pop(indg)
+
+            splitMatching_f1Scores_atk[cntxt_qid].append((split_pred_span1, maxMatched_gold_span, maxf1, rank))
+    return matching_f1Scores_at1, splitMatching_f1Scores_atk
+
+def evaluate_Questions_wRange(splitMatching_f1Scores, gold_spans_in_cntxt_qids_list, matching_f1Scores_at1,
+                              eval_scores_file, cutoff_rank):
+
+    f1At1_rng_all_s = 0.0
+    em_rng_all_s = 0.0
+
+    f1At1_rng_split_all_s = 0.0  # for comparison with f1At1_rng_all_s
+    em_rng_split_all_s = 0.0
+
+    pAP_all_s = 0.0
+    s_questions = 0  # single_answer questions
+    s_qa_pairs = 0
+
+    pAP_all_m = 0.0 # partial Average precision
+    m_questions = 0  # multi_answer questions
+    m_qa_pairs =0
+
+    for cntxt_qid, values in splitMatching_f1Scores.items():
+        pred_spans, maxMatched_gold_spans, maxf1s_rng, ranks = zip(*values)
+
+        gold_spans_set = set(gold_spans_in_cntxt_qids_list[cntxt_qid])  # this is a set
+        gold_spans_list = gold_spans_in_cntxt_qids_list[cntxt_qid]  # not sure if this is really needed
+        pred_span_at1, maxMatched_gold_span_at1, maxf1_rng_at1 = zip(*matching_f1Scores_at1[cntxt_qid])
+        maxf1_rng_at1 = maxf1_rng_at1[0]
+        em_rng = 0
+        mScores = list(maxf1s_rng)
+
+        ### Evaluating single answer questions ###
+        if len(gold_spans_set)==1 or len(gold_spans_list)==1:
+            qtype='s'
+            s_questions += 1
+            s_qa_pairs = s_qa_pairs + len(gold_spans_list)
+            # if len(gold_spans_list)>1:
+                #single-answer questions may have more than one occurence of the same answer in the context/pargraph
+                # print("cntxt_qid:%s of s-type  with len(gold_spans_list)=%d"%(cntxt_qid, len(gold_spans_list)))
+
+            ## Implementation of f1@1
+            # For sanity check to compare with f1At1_rng
+            f1At1_rng_split = maxf1s_rng[0]  # which is the same as f1 over range overlap, had to remove it because it might be split
+            f1At1_rng = maxf1_rng_at1 # which is the same as f1 over range overlap
+
+            f1At1_rng_all_s += f1At1_rng
+            f1At1_rng_split_all_s += f1At1_rng_split
+
+            #computed only for comparison with em_rng_all_s
+            if maxf1s_rng[0] == 1:
+                em_rng_split = 1
+            else:
+                em_rng_split = 0
+            em_rng_split_all_s += em_rng_split
+
+            if maxf1_rng_at1==1:
+                em_rng = 1
+            else:
+                em_rng = 0
+            em_rng_all_s += em_rng
+
+            ## Computing partial average precision for single-answer question
+            pAP = pAP_score(mScores, ranks, gold_spans_set)
+            pAP_all_s += pAP
+
+            qtypes_file.write("\t".join((cntxt_qid, qtype))+"\n")
+            eval_scores_file.write("\t".join((cntxt_qid, "s", str(pAP), str(f1At1_rng), str(em_rng))) + "\n")
+
+        if len(gold_spans_set)>1:
+            m_questions += 1
+            m_qa_pairs = m_qa_pairs + len(gold_spans_list)
+            qtype='m'
+
+            ## Computing partial average precision for multi_answer question
+            pAP = pAP_score(mScores, ranks, gold_spans_set)
+            pAP_all_m += pAP
+
+            qtypes_file.write("\t".join((cntxt_qid, qtype)) + "\n")
+            eval_scores_file.write("\t".join((cntxt_qid, "m", str(pAP))) + "\n")
+
+    print('\ns_questions=%d, s_qa_pairs=%d' % (s_questions, s_qa_pairs))
+    print('m_questions=%d, m_qa_pairs=%d' % (m_questions, m_qa_pairs))
+    print("all_questions=%d, all_qa_pairs=%d" % (s_questions + m_questions, all_qa_pairs))
+
+    if s_questions != 0:
+            avg_f1At1 = 100.0 * f1At1_rng_all_s / s_questions
+            avg_em = 100.0 * em_rng_all_s / s_questions
+            avg_pAP = 100.0 * pAP_all_s / s_questions
+
+            print('\n==> Single-answer questions: F1@1: %.3f, EM=%0.3f, pAP@%s= %0.3f' % (
+            avg_f1At1, avg_em, cutoff_rank, avg_pAP))
+
+    if m_questions != 0:
+            avg_pAP = 100.0 * pAP_all_m / m_questions
+            print('==> Multi-answer questions: \t\t\t\t\t\t  pAP@%s: %0.3f' % (cutoff_rank, avg_pAP))
+
+    overall_pAP = 100.0 * (pAP_all_s + pAP_all_m) / (
+                s_questions + m_questions)
+    print('==> All questions: \t\t\t\t\t\t\t\t\t  pAP@%s= %0.3f ' % (cutoff_rank, overall_pAP))
+
+if __name__ == '__main__':
+    version = '1.1'
+    parser = argparse.ArgumentParser(
+        description='Evaluation for QRCD ' + version)
+    parser.add_argument('--dataset_file', help='Dataset file')
+    parser.add_argument('--prediction_file', help='Prediction File')
+    parser.add_argument('--nbest_prediction_file', help='nbest_Prediction file', required=True)
+    parser.add_argument('--cutoff_rank', help='Cutoff rank at which to prune nbest_predictions, default=10',
+                        required=False, default='10')
+    args = parser.parse_args()
+    farasa_segmenter = FarasaSegmenter(interactive=True)
+
+    #with open(args.dataset_file) as dataset_file: # use if tenserflow is not imported
+    with tf.io.gfile.GFile(args.dataset_file, "r") as dataset_file:
+        dataset_json = json.load(dataset_file)
+        dataset = dataset_json['data']
+
+    #with open(args.prediction_file) as prediction_file: # use if tenserflow is not imported
+    with tf.io.gfile.GFile(args.prediction_file, "r") as prediction_file:
+        predictions = json.load(prediction_file)
+
+    #with open(args.nbest_prediction_file) as nbest_prediction_file: # use if tenserflow is not imported
+    with tf.io.gfile.GFile(args.nbest_prediction_file, "r") as nbest_prediction_file:
+        nbest_predictions = json.load(nbest_prediction_file)
+
+    #for writing evaluation scores to a file
+    path_to_eval_scores_file = "eval_scores_at" + args.cutoff_rank +".txt"
+    #eval_scores_file = open(path_to_eval_scores_file, 'w') # use if tenserflow is not imported
+    eval_scores_file = tf.io.gfile.GFile(path_to_eval_scores_file, "w")
+
+    path_to_qtypes_file = "qtypes_by_span_num.txt"
+    #qtypes_file = open(path_to_qtypes_file, 'w') # use if tenserflow is not imported
+    qtypes_file = tf.io.gfile.GFile(path_to_qtypes_file, "w")
+
+    ## load the gold spans of each question within each context
+    gold_spans_in_cntxt_qids_list, gold_spans_ranges_in_cntxt_qids, contexts, all_qa_pairs = load_gold_spans(dataset)
+
+    ## load the nbest predictions of each question within each context
+    all_pred_spans_ranges_in_cntxt_qids = load_pred_spans(
+        nbest_predictions, contexts)
+
+    matching_f1Scores_at1, splitMatching_f1Scores_atk = compute_atk_splitMatchingScores(
+        gold_spans_ranges_in_cntxt_qids, all_pred_spans_ranges_in_cntxt_qids, args.cutoff_rank, contexts)
+
+    # 4. compute pAP@k, F1@1 and EM with matching using F1 over ranges (i.e., token positions) with splitting, if needed
+    evaluate_Questions_wRange(splitMatching_f1Scores_atk, gold_spans_in_cntxt_qids_list,
+                              matching_f1Scores_at1, eval_scores_file, args.cutoff_rank)
