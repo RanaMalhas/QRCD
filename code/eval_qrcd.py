@@ -61,8 +61,14 @@ def normalize_answers_wAr(ss):
         cleaned_ss.append(s)
     return cleaned_ss
 
-def f1_score(prediction_tokensIds, ground_truth_tokensIds):
+def exact_match_score(matching_at1):
+    if matching_at1 == 1:
+        return 1
+    else:
+        return 0
 
+
+def f1_score(prediction_tokensIds, ground_truth_tokensIds):
     common = Counter(prediction_tokensIds) & Counter(ground_truth_tokensIds)
     num_same = sum(common.values())
     if num_same == 0:
@@ -515,10 +521,7 @@ def evaluate_Questions_wRange(matching_f1Scores_at1, splitMatching_f1Scores, gol
             f1_at1_all_s += f1_at1
 
             # Compute EM Exact Match
-            if maxf1_at1==1:
-                em = 1
-            else:
-                em = 0
+            em = exact_match_score(maxf1_at1)
             em_all_s += em
 
             ## Computing partial average precision for single-answer question
