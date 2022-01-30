@@ -568,7 +568,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Evaluation for QRCD ' + version)
     parser.add_argument('--dataset_file', help='Dataset file')
-    parser.add_argument('--prediction_file', help='Prediction File')
     parser.add_argument('--nbest_prediction_file', help='nbest_Prediction file', required=True)
     parser.add_argument('--cutoff_rank', help='Cutoff rank at which to prune nbest_predictions, default=10',
                         required=False, default='10')
@@ -579,10 +578,6 @@ if __name__ == '__main__':
     with tf.io.gfile.GFile(args.dataset_file, "r") as dataset_file:
         dataset_json = json.load(dataset_file)
         dataset = dataset_json['data']
-
-    #with open(args.prediction_file) as prediction_file: # use if tenserflow is not imported
-    with tf.io.gfile.GFile(args.prediction_file, "r") as prediction_file:
-        predictions = json.load(prediction_file)
 
     #with open(args.nbest_prediction_file) as nbest_prediction_file: # use if tenserflow is not imported
     with tf.io.gfile.GFile(args.nbest_prediction_file, "r") as nbest_prediction_file:
