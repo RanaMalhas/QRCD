@@ -42,7 +42,7 @@ def normalize_answer_wAr(s):
     def white_space_fix(text):
         return ' '.join(text.split())
 
-    def remove_punc_wAr(text): ## rana: arabic comma, semicolon and question mark
+    def remove_punc_wAr(text):
         exclude = set(string.punctuation)
         exclude.add('،')
         exclude.add('؛')
@@ -66,7 +66,6 @@ def exact_match_score(matching_at1):
         return 1
     else:
         return 0
-
 
 def f1_score(prediction_tokensIds, ground_truth_tokensIds):
     common = Counter(prediction_tokensIds) & Counter(ground_truth_tokensIds)
