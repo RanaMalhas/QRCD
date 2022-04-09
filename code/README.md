@@ -2,7 +2,7 @@ To run the evaluation script:
 
 ```
 python eval_qrcd.py
-  --dataset_file= .../qrcd_dev_gold.json
+  --dataset_file= .../qrcd_v1.1_test.json
   --nbest_prediction_file=.../nbest_predictions.json 
   --cutoff_rank=10
 ```
