@@ -7,5 +7,4 @@ python eval_qrcd.py
   --cutoff_rank=10
 ```
 
-You can use part of the `qrcd_v1.1_train.json` as a development set for evaluation. \
-As the `qrcd_v1.1_test.json` will be released without its answers, a leaderboard is being developed on CodaLab to receive a system's submission for evaluation.
+The `qrcd_v1.1_test.json` will be released soon after announcing the winners of the [Quran QA 2022 Shared Task](https://sites.google.com/view/quran-qa-2022/home?authuser=0). 
