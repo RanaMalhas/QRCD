@@ -3,6 +3,14 @@ This repository contains information about *QRCD*, CL-AraBERT (**CL**assical **A
 
 *QRCD* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below.
 
+| **Dataset** | **%** | **# Question-Passage  Pairs** | **# Question-Passage-Answer  Triplets** |
+|-------------|:-----:|:-----------------------------:|:---------------------------------------:|
+| Training    |  65%  |              710              |                   861                   |
+| Development |  10%  |              109              |                   128                   |
+| Test        |  25%  |              274              |                   348                   |
+| All         |  100% |              1,093            |                  1,337                  |
+
+
 |     Dataset          | ** # Question-Passage Pairs** | **   # Question-passage-answer triplets** |                                 |                                |
 |----------------------|:-----------------------------:|:-----------------------------------------:|---------------------------------|--------------------------------|
 |                      |                               |           **   All  Questions**           | **   Single-answer  Questions** | **   Multi-answer  Questions** |
