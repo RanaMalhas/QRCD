@@ -11,12 +11,12 @@ This repository contains information about *QRCD*, [CL-AraBERT](https://github.c
 | All         |  100% |              1,093            |                  1,337                  |
  -->
 
-|     Dataset          | ** # Question-Passage Pairs** | **   # Question-passage-answer triplets** |                                 |                                |
-|:--------------------:|:-----------------------------:|:-----------------------------------------:|---------------------------------|--------------------------------|
-|                      |                               |           **   All  Questions**           | **   Single-answer  Questions** | **   Multi-answer  Questions** |
-|     All              |                1093           |                      1337                 |                 949             |                 388            |
-|     Training         |               819             |                      989                  |                722              |                 268            |
-|     Test / Holdout   |                274            |                      348                  |                 227             |                121             |
+|     Dataset          | **# Question-Passage Pairs** |**# Question-passage-answer triplets**|                             |                            |
+|:--------------------:|:----------------------------:|:------------------------------------:|-----------------------------|----------------------------|
+|                      |                              |           **All Questions**          | **Single-answer Questions** | **Multi-answer Questions** |
+|     All              |               1093           |                   1337               |                949          |             388            |
+|     Training         |               819            |                   989                |                722          |             268            |
+|     Test / Holdout   |               274            |                   348                |                227          |             121             |
 
 <!-- | **Dataset**    | **%** |**# Question-Passage Pairs** |               **# Question-passage-answer triplets**                          |
 |----------------|:-----:|:---------------------------:|:------------------:|-----------------------------|----------------------------|
