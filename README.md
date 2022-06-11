@@ -1,7 +1,7 @@
 # *QRCD* (Qur'anic Reading Comprehension Dataset)
-This repository contains information about *QRCD*, [CL-AraBERT](https://github.com/RanaMalhas/QRCD/blob/main/README.md#cl-arabert-pre-trained-language-model) (**CL**assical **AraBERT**) pre-trained model and [code](https://github.com/RanaMalhas/QRCD/tree/main/code) for evaluating results on *QRCD*.
+This repository contains information about [*QRCD*](https://github.com/RanaMalhas/QRCD/tree/main/dataset), [CL-AraBERT](https://github.com/RanaMalhas/QRCD/blob/main/README.md#cl-arabert-pre-trained-language-model) (**CL**assical **AraBERT**) pre-trained model and [code](https://github.com/RanaMalhas/QRCD/tree/main/code) for evaluating results on *QRCD*.
 
-*QRCD* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below.
+*QRCD* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below. The dataset in this repo adopts the SQuAD v1.1 format. A version in JSONL (JSON lines) format is also available. It can be downloaded from the [Qur'an QA 2022 repo](https://gitlab.com/bigirqu/quranqa/-/tree/main/datasets). 
 
 <!-- | **Dataset** | **%** | **# Question-Passage  Pairs** | **# Question-Passage-Answer  Triplets** |
 |-------------|:-----:|:-----------------------------:|:---------------------------------------:|
@@ -11,12 +11,13 @@ This repository contains information about *QRCD*, [CL-AraBERT](https://github.c
 | All         |  100% |              1,093            |                  1,337                  |
  -->
 
-|     Dataset          | **# Question-Passage Pairs** |**# Question-passage-answer triplets**|                             |                            |
-|:--------------------:|:----------------------------:|:------------------------------------:|-----------------------------|----------------------------|
-|                      |                              |           **All Questions**          | **Single-answer Questions** | **Multi-answer Questions** |
-|     All              |               1093           |                   1337               |                949          |             388            |
-|     Training         |               819            |                   989                |                722          |             268            |
-|     Test / Holdout   |               274            |                   348                |                227          |             121             |
+| Dataset          |**# Question-Passage Pairs**|**# QPA triplets for All Questions**|**# QPA triplets for Single-answer Questions**|**#QPA triplets for Multi-answer Questions**|
+|------------------|:--------------------------:|:-------------------------:|:---------------------------:|:----------------------------:|       
+| All              |            1093            |        1337               |          949          |             388            |
+| Training         |            819             |        989                |          722          |             268            |
+| Test / Holdout\* |            274             |        348                |          227          |             121            |
+
+*The test/holdout dataset will be released soon
 
 <!-- | **Dataset**    | **%** |**# Question-Passage Pairs** |               **# Question-passage-answer triplets**                          |
 |----------------|:-----:|:---------------------------:|:------------------:|-----------------------------|----------------------------|
@@ -24,7 +25,7 @@ This repository contains information about *QRCD*, [CL-AraBERT](https://github.c
 | All            | 100%  |          1,093              |     1,337          |          949                |           388              |
 | Training       | 75%   |          819                |     989            |          722                |           268              |
 | Test / Holdout*| 25%   |          274                |     348            |          227                |           121              | -->
-*The test will released soon
+
 
 Each Qur’anic passage in QRCD may have more than one occurrence; and each passage occurrence is paired with a different question. Likewise, each question in QRCD may have more than one occurrence; and each question occurrence is paired with a different Qur’anic passage.
 
