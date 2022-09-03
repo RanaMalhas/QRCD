@@ -11,14 +11,13 @@ This repository contains information about [*QRCD*](https://github.com/RanaMalha
 | All         |  100% |              1,093            |                  1,337                  |
  -->
 
-| Dataset          |**# Question-Passage Pairs**|**# QPA\*\* triplets for All Questions**|**# QPA triplets for Single-answer Questions**|**#QPA triplets for Multi-answer Questions**|
+| Dataset          |**# Question-Passage Pairs**|**# QPA\* triplets for All Questions**|**# QPA triplets for Single-answer Questions**|**#QPA triplets for Multi-answer Questions**|
 |------------------|:--------------------------:|:-------------------------:|:---------------------------:|:----------------------------:|       
 | All              |            1093            |        1337               |          949          |             388            |
 | Training         |            819             |        989                |          722          |             268            |
-| Test / Holdout\* |            274             |        348                |          227          |             121            |
+| Test / Holdout   |            274             |        348                |          227          |             121            |
 
-\**The test/holdout dataset will be released soon*
-\*\** QPA stands for question-passage-pair
+\* QPA stands for question-passage-pair
 
 <!-- | **Dataset**    | **%** |**# Question-Passage Pairs** |               **# Question-passage-answer triplets**                          |
 |----------------|:-----:|:---------------------------:|:------------------:|-----------------------------|----------------------------|
