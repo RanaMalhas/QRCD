@@ -32,6 +32,6 @@ Each Qur’anic passage in QRCD may have more than one occurrence; and each pass
 The source of the Qur'anic text in *QRCD* is the [Tanzil project download page](https://tanzil.net/download/), which provides verified versions of the Holy Qur'an in several scripting styles. We have chosen the simple-clean text style of Tanzil version 1.0.2.
 
 # CL-AraBERT Pre-trained Language Model
-Download [CL-AraBERTv0.1](https://www.dropbox.com/s/ekkgoj2yrkhgtez/CL-AraBERTv0.1-base.zip?dl=0); an AraBERT-based model that is further pre-trained using about 1.05B-word Classical Arabic dataset taken from the [OpenITI corpus](https://github.com/OpenITI/RELEASE).  
+Download [CL-AraBERTv0.1](https://www.dropbox.com/sh/9zazklvmtzkg1sv/AADiJuZlfUca-mCJZIELQpwta?dl=0); an AraBERT-based model that is further pre-trained using about 1.05B-word Classical Arabic dataset taken from the [OpenITI corpus](https://github.com/OpenITI/RELEASE).  
 
 
