@@ -391,7 +391,7 @@ def compute_matchingScores_withSplitting(gold_spans_ranges, pred_spans_ranges, c
         splitMatching_f1Scores.append((split_pred_span1, maxMatched_gold_span, maxf1, rank))
     return matching_f1Scores_at1, splitMatching_f1Scores
 
-def evaluate(dataset, nbest_predictions, cutoff_rank, eval_scores_file, qtypes_file):
+def evaluate(dataset, nbest_predictions, cutoff_rank): 
     f1_at1_all_s = 0.0
     em_all_s = 0.0
     pAP_all_s = 0.0
@@ -498,8 +498,6 @@ def evaluate(dataset, nbest_predictions, cutoff_rank, eval_scores_file, qtypes_f
                     pAP = pAP_score(mScores, ranks, gold_spans_set)
                     pAP_all_s += pAP
 
-                    qtypes_file.write("\t".join((cntxt_qid, qtype)) + "\n")
-                    eval_scores_file.write("\t".join((cntxt_qid, "s", str(pAP), str(f1_at1), str(em))) + "\n")
 
                 if len(gold_spans_set) > 1:
                     m_questions += 1
@@ -510,8 +508,6 @@ def evaluate(dataset, nbest_predictions, cutoff_rank, eval_scores_file, qtypes_f
                     pAP = pAP_score(mScores, ranks, gold_spans_set)
                     pAP_all_m += pAP
 
-                    qtypes_file.write("\t".join((cntxt_qid, qtype)) + "\n")
-                    eval_scores_file.write("\t".join((cntxt_qid, "m", str(pAP))) + "\n")
 
     print('\ns_questions=%d, s_qa_pairs=%d' % (s_questions, s_qa_pairs))
     print('m_questions=%d, m_qa_pairs=%d' % (m_questions, m_qa_pairs))
@@ -553,13 +549,5 @@ if __name__ == '__main__':
     with tf.io.gfile.GFile(args.nbest_prediction_file, "r") as nbest_prediction_file:
         nbest_predictions = json.load(nbest_prediction_file)
 
-    #for writing evaluation scores to a file
-    path_to_eval_scores_file = args.nbest_prediction_file[:-22] + "trial_byRfctrd_eval_scores_at" + args.cutoff_rank +".txt"
-    #eval_scores_file = open(path_to_eval_scores_file, 'w') # use if tenserflow is not imported
-    eval_scores_file = tf.io.gfile.GFile(path_to_eval_scores_file, "w")
-
-    path_to_qtypes_file = args.nbest_prediction_file[:-22] + "trial_byRfctrd_eval_qtypes_by_span_num.txt"
-    #qtypes_file = open(path_to_qtypes_file, 'w') # use if tenserflow is not imported
-    qtypes_file = tf.io.gfile.GFile(path_to_qtypes_file, "w")
-
-    evaluate(dataset, nbest_predictions, args.cutoff_rank, eval_scores_file, qtypes_file )
+ 
+    evaluate(dataset, nbest_predictions, args.cutoff_rank) 
