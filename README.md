@@ -1,7 +1,7 @@
 # *QRCD* (Qur'anic Reading Comprehension Dataset)
 This repository contains information about [*QRCD*](https://github.com/RanaMalhas/QRCD/tree/main/dataset), [CL-AraBERT](https://github.com/RanaMalhas/QRCD/blob/main/README.md#cl-arabert-pre-trained-language-model) (**CL**assical **AraBERT**) pre-trained model and [code](https://github.com/RanaMalhas/QRCD/tree/main/code) for evaluating results on *QRCD*.
 
-*QRCD* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below. The dataset in this repo adopts the SQuAD v1.1 format. A version in JSONL (JSON lines) format is also available. It can be downloaded from the [Qur'an QA 2022 repo](https://gitlab.com/bigirqu/quranqa/-/tree/main/datasets). 
+*QRCD* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below. The dataset in this repo adopts the [SQuAD v1.1 format](https://github.com/facebookresearch/DrQA#format-b). A version in JSONL (JSON lines) format is also available. It can be downloaded from the [Qur'an QA 2022 repo](https://gitlab.com/bigirqu/quranqa/-/tree/main/datasets). 
 
 <!-- | **Dataset** | **%** | **# Question-Passage  Pairs** | **# Question-Passage-Answer  Triplets** |
 |-------------|:-----:|:-----------------------------:|:---------------------------------------:|
