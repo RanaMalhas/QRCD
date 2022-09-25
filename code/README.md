@@ -4,10 +4,10 @@
 
 ```
 python qrcd_preprocessing.py
-	--input_file= .../qrcd_v1.1_test.json \
-	--output_file= .../qrcd_v1.1_test_pre.json \ 
-	--do_farasa_tokenization=False \ 
-	--use_farasapy=False 
+  --input_file= .../qrcd_v1.1_test.json \
+  --output_file= .../qrcd_v1.1_test_pre.json \ 
+  --do_farasa_tokenization=False \ 
+  --use_farasapy=False 
 ```
 
 2. Run the evaluation script.
