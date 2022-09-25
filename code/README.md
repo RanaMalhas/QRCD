@@ -9,6 +9,8 @@ python qrcd_preprocessing.py
   --do_farasa_tokenization=False \ 
   --use_farasapy=False 
 ```
+This step is essential to recompute and adjust the answer-start character position of each answer span. 
+
 
 2. Run the evaluation script.
 
