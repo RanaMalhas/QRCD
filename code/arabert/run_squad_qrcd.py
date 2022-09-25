@@ -200,7 +200,7 @@ flags.DEFINE_float(
     "If null_score - best_non_null is greater than the threshold predict null.",
 )
 
-flags.DEFINE_integer("random_seed", 12345, "Random seed for data generation.") ##added by rana
+flags.DEFINE_integer("random_seed", 12345, "Random seed for data generation.") ## added on Feb 2021
 
 class SquadExample(object):
     """A single training/test example for simple sequence classification.
@@ -994,8 +994,8 @@ def write_predictions(
                     text=final_text,
                     start_logit=pred.start_logit,
                     end_logit=pred.end_logit,
-                    orig_start_index=orig_doc_start, ##added by rana
-                    orig_end_index=orig_doc_end ## added by rana
+                    orig_start_index=orig_doc_start, ## added on Feb 2021
+                    orig_end_index=orig_doc_end ## added on Feb 2021
                 )
             )
 
@@ -1005,13 +1005,13 @@ def write_predictions(
                 nbest.append(
                     _NbestPrediction(
                         text="", start_logit=null_start_logit, end_logit=null_end_logit, orig_start_index=0, orig_end_index=0
-                    ) ## added by rana: orig_start_index=0, orig_end_index=0
+                    ) ## added on Feb 2021: orig_start_index=0, orig_end_index=0
                 )
         # In very rare edge cases we could have no valid predictions. So we
         # just create a nonce prediction in this case to avoid failure.
         if not nbest:
             #nbest.append(_NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0))
-            nbest.append(_NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0, orig_start_index=0, orig_end_index=0)) ## added by rana
+            nbest.append(_NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0, orig_start_index=0, orig_end_index=0)) ## added on Feb 2021
 
         assert len(nbest) >= 1
 
@@ -1032,8 +1032,8 @@ def write_predictions(
             output["probability"] = probs[i]
             output["start_logit"] = entry.start_logit
             output["end_logit"] = entry.end_logit
-            output["orig_start_index"] = entry.orig_start_index ##added by rana
-            output["orig_end_index"] = entry.orig_end_index ## added by rana
+            output["orig_start_index"] = entry.orig_start_index ## added on Feb 2021
+            output["orig_end_index"] = entry.orig_end_index ## added on Feb 2021
             nbest_json.append(output)
 
         assert len(nbest_json) >= 1
