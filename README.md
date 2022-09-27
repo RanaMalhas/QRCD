@@ -34,4 +34,46 @@ The source of the Qur'anic text in *QRCD* is the [Tanzil project download page](
 # CL-AraBERT Pre-trained Language Model
 Download [CL-AraBERTv0.1](https://www.dropbox.com/sh/9zazklvmtzkg1sv/AADiJuZlfUca-mCJZIELQpwta?dl=0); an AraBERT-based model that is further pre-trained using about 1.05B-word Classical Arabic dataset taken from the [OpenITI corpus](https://github.com/OpenITI/RELEASE).  
 
+## How to use CL-AraBERT
+Although CL-AraBERT was initially pre-trained for the purpose of developing a machine reading comprehension (MRC) model on the Holy Qur'an, it can easily be exploited for developing *other* NLP tasks on the Holy Qur'an and CA text, such as detecting semantic similarity between Qur'anic verses, and question answering (QA) on Hadith or Exegeses of Qur'an, among others.  
 
+### Using CL-AraBERT with *QRCD*
+
+1. Preprocess the train and test datasets using [qrcd_preprocessing.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/qrcd_preprocessing.py).
+
+```
+python qrcd_preprocessing.py
+  --input_file= .../qrcd_v1.1_train.json \
+  --output_file= .../qrcd_v1.1_train_pre.json \ 
+  --do_farasa_tokenization=False \ 
+  --use_farasapy=False 
+```
+python qrcd_preprocessing.py \
+  --input_file= .../qrcd_v1.1_test.json \
+  --output_file= .../qrcd_v1.1_test_pre.json \ 
+  --do_farasa_tokenization=False \ 
+  --use_farasapy=False 
+```
+
+2. Fine-tune the model for the QA/MRC task
+
+```
+python run_squad_qrcd.py \  
+  --vocab_file= .../PATH_TO_PRE-TRAINED_TF_CKPT/vocab.txt \
+  --bert_config_file= .../PATH_TO_PRE-TRAINED_TF_CKPT/config.json \
+  --init_checkpoint= .../PATH_TO_PRE-TRAINED_TF_CKPT/cl-arabert01_model.ckpt.data \
+  --do_train=True \
+  --train_file= .../qrcd_v1.1_train_pre.json \
+  --do_predict=True \
+  --predict_file=.../qrcd_v1.1_test_pre.json \ 
+  --train_batch_size=32 \
+  --predict_batch_size=24 \
+  --learning_rate=3e-5 \
+  --num_train_epochs=4 \
+  --max_seq_length=384 \
+  --doc_stride=128 \
+  --do_lower_case=False \
+  --output_dir= .../PATH_TO_OUTPUT_PATH \
+  --use_tpu=True \
+  --tpu_name=$TPU_NAME
+```
