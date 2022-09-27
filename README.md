@@ -48,6 +48,7 @@ python qrcd_preprocessing.py
   --do_farasa_tokenization=False \ 
   --use_farasapy=False 
 ```
+```
 python qrcd_preprocessing.py \
   --input_file= .../qrcd_v1.1_test.json \
   --output_file= .../qrcd_v1.1_test_pre.json \ 
@@ -76,4 +77,5 @@ python run_squad_qrcd.py \
   --output_dir= .../PATH_TO_OUTPUT_PATH \
   --use_tpu=True \
   --tpu_name=$TPU_NAME
+  
 ```
