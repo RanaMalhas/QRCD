@@ -12,7 +12,8 @@ python qrcd_preprocessing.py \
 This step is essential to recompute and adjust the answer-start character position of each answer span. 
 
 
-2. Run the evaluation script.
+2. Run the evaluation script. 
+   The farasapy package must be installed before running the script.
 
 ```
 python eval_qrcd.py
