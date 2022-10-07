@@ -13,6 +13,7 @@ This step is essential to recompute and adjust the answer-start character positi
 
 
 2. Run the evaluation script. 
+
    The farasapy package must be installed before running the script.
 
 ```
