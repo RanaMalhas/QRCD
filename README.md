@@ -49,7 +49,7 @@ You can easily use CL-AraBERT since it is almost fully compatible with the offic
 Reformatting (or unpooling) is needed for the answer spans of multi-answer questions so that each answer span with its corresponding question and passage (question-passage-answer triplet) is considered a training eample. 
 
 ```
-python transform_to_unpooled_answers_format.py
+python ./code/data_util/transform_to_unpooled_answers_format.py
   --input_file=.../qrcd_v1.1_train.json 
   --output_file=.../qrcd_v1.1_train_reformatted.json
 ```
@@ -57,14 +57,14 @@ python transform_to_unpooled_answers_format.py
 2. Preprocess the train and test datasets.
 
 ```
-python qrcd_preprocessing.py
+python ./code/arabert/qrcd_preprocessing.py
   --input_file= .../qrcd_v1.1_train_reformatted.json \
   --output_file= .../qrcd_v1.1_train_reformatted_pre.json \ 
   --do_farasa_tokenization=False \ 
   --use_farasapy=False 
 ```
 ```
-python qrcd_preprocessing.py \
+python ./code/arabert/qrcd_preprocessing.py \
   --input_file= .../qrcd_v1.1_test.json \
   --output_file= .../qrcd_v1.1_test_pre.json \ 
   --do_farasa_tokenization=False \ 
@@ -74,7 +74,7 @@ python qrcd_preprocessing.py \
 3. Fine-tune the model for the QA/MRC task.
 
 ```
-python run_squad_qrcd.py \  
+python ./code/arabert/run_squad_qrcd.py \  
   --vocab_file= .../PATH_TO_PRE-TRAINED_TF_CKPT/vocab.txt \
   --bert_config_file= .../PATH_TO_PRE-TRAINED_TF_CKPT/config.json \
   --init_checkpoint= .../PATH_TO_PRE-TRAINED_TF_CKPT/cl-arabert01_model.ckpt.data \
