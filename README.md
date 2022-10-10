@@ -58,6 +58,8 @@ python qrcd_preprocessing.py \
 
 2. Fine-tune the model for the QA/MRC task
 
+Since our evaluation script is based on the start/end token positions of the predicted answer(s), you will need to use [run_squad_qrcd.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/run_squad_qrcd.py) in fine-tuning instead of the original [run_squad.py](https://github.com/google-research/bert/blob/master/run_squad.py) script released with the original [BERT paper](https://arxiv.org/abs/1810.04805).  Though, the only change that we have introduced to the original script is to write out the start/end token positions of each predicted answer span to the nbest_predictions.json file as well. 
+
 ```
 python run_squad_qrcd.py \  
   --vocab_file= .../PATH_TO_PRE-TRAINED_TF_CKPT/vocab.txt \
