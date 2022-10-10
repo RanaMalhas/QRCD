@@ -44,13 +44,22 @@ You can easily use CL-AraBERT since it is almost fully compatible with the offic
 * run_squad.py: since our [evaluation script](https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py) is based on the start/end token positions of the predicted answer(s), we modified run_squad.py such that it writes out the start/end token positions of each predicted answer span to the answer predictions file (nbest_predictions.json) as well. The modified version is named [run_squad_qrcd.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/run_squad_qrcd.py). 
 
 ### Using CL-AraBERT with *QRCD*
+1. Reformat the train dataset.
 
-1. Preprocess the train and test datasets using [qrcd_preprocessing.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/qrcd_preprocessing.py).
+Reformatting (or unpooling) is needed for the answer spans of multi-answer questions so that each answer span with its corresponding question and passage (question-passage-answer triplet) is considered a training eample. 
+
+```
+python transform_to_unpooled_answers_format.py
+  --input_file=.../qrcd_v1.1_train.json 
+  --output_file=.../qrcd_v1.1_train_reformatted.json
+```
+
+2. Preprocess the train and test datasets.
 
 ```
 python qrcd_preprocessing.py
-  --input_file= .../qrcd_v1.1_train.json \
-  --output_file= .../qrcd_v1.1_train_pre.json \ 
+  --input_file= .../qrcd_v1.1_train_reformatted.json \
+  --output_file= .../qrcd_v1.1_train_reformatted_pre.json \ 
   --do_farasa_tokenization=False \ 
   --use_farasapy=False 
 ```
@@ -62,7 +71,7 @@ python qrcd_preprocessing.py \
   --use_farasapy=False 
 ```
 
-2. Fine-tune the model for the QA/MRC task
+3. Fine-tune the model for the QA/MRC task.
 
 ```
 python run_squad_qrcd.py \  
@@ -70,7 +79,7 @@ python run_squad_qrcd.py \
   --bert_config_file= .../PATH_TO_PRE-TRAINED_TF_CKPT/config.json \
   --init_checkpoint= .../PATH_TO_PRE-TRAINED_TF_CKPT/cl-arabert01_model.ckpt.data \
   --do_train=True \
-  --train_file= .../qrcd_v1.1_train_pre.json \
+  --train_file= .../qrcd_v1.1_train_reformatted_pre.json \
   --do_predict=True \
   --predict_file=.../qrcd_v1.1_test_pre.json \ 
   --train_batch_size=32 \
