@@ -37,6 +37,13 @@ Download [CL-AraBERTv0.1](https://www.dropbox.com/sh/9zazklvmtzkg1sv/AADiJuZlfUc
 ## How to use CL-AraBERT
 Although CL-AraBERT was initially pre-trained for the purpose of developing a machine reading comprehension (MRC) model on the Holy Qur'an, it can easily be exploited for developing *other* NLP tasks on the Holy Qur'an and CA text, such as detecting semantic similarity between Qur'anic verses, and question answering (QA) on Hadith or Exegeses of Qur'an, among others.  
 
+You can easily use CL-AraBERT since it is almost fully compatible with the official AraBERT and BERT codebases. The two minor differences with the offical BERT are in:
+
+* tokenization.py: since we have used the AraBERT codebase, the only difference between AraBERT and BERT is in the tokenization.py file where the function \_is_punctuation was modified to make it compatible the "+" symbol and the "[" and "]" characters as explained [here](
+https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py).
+
+* run_squad.py: since our [evaluation script](https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py) is based on the start/end token positions of the predicted answer(s), we modified run_squad.py such that it writes out the start/end token positions of each predicted answer span to the answer predictions file (nbest_predictions.json) as well. The modified version is named [run_squad_qrcd.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/run_squad_qrcd.py). 
+
 ### Using CL-AraBERT with *QRCD*
 
 1. Preprocess the train and test datasets using [qrcd_preprocessing.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/qrcd_preprocessing.py).
@@ -57,8 +64,6 @@ python qrcd_preprocessing.py \
 ```
 
 2. Fine-tune the model for the QA/MRC task
-
-Since our [evaluation script](https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py) is based on the start/end token positions of the predicted answer(s), you will need to use [run_squad_qrcd.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/run_squad_qrcd.py) in fine-tuning (instead of using the original [run_squad.py](https://github.com/google-research/bert/blob/master/run_squad.py) script released with the original [BERT paper](https://arxiv.org/abs/1810.04805)).  Though, the only change that we have introduced to the original script is to write out the start/end token positions of each predicted answer span to the answer predictions file (nbest_predictions.json) as well. 
 
 ```
 python run_squad_qrcd.py \  
