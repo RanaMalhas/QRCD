@@ -80,8 +80,11 @@ python run_squad_qrcd.py \
   --max_seq_length=384 \
   --doc_stride=128 \
   --do_lower_case=False \
-  --output_dir= .../PATH_TO_OUTPUT_PATH \
+  --output_dir= .../PATH_TO_OUTPUT_PATH   
+```
+Note: If you have access to a Cloud TPU that you want to fine-tune/train on, just add the following additional flags to run_squad_qrcd.py:
+
+```
   --use_tpu=True \
   --tpu_name=$TPU_NAME
-  
 ```
