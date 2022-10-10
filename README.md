@@ -39,8 +39,7 @@ Although CL-AraBERT was initially pre-trained for the purpose of developing a ma
 
 You can easily use CL-AraBERT since it is almost fully compatible with the official AraBERT and BERT codebases. The two minor differences with the offical BERT are in:
 
-* tokenization.py: since we have used the AraBERT codebase, the only difference between AraBERT and BERT is in the tokenization.py file where the function \_is_punctuation was modified to make it compatible the "+" symbol and the "[" and "]" characters as explained [here](
-https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py).
+* tokenization.py: since we have used the AraBERT codebase, the only difference between AraBERT and BERT is in the tokenization.py file where the function \_is_punctuation was modified to make it compatible the "+" symbol and the "[" and "]" characters as explained [here](https://github.com/aub-mind/arabert/tree/master/arabert#how-to-use).
 
 * run_squad.py: since our [evaluation script](https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py) is based on the start/end token positions of the predicted answer(s), we modified run_squad.py such that it writes out the start/end token positions of each predicted answer span to the answer predictions file (nbest_predictions.json) as well. The modified version is named [run_squad_qrcd.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/run_squad_qrcd.py). 
 
