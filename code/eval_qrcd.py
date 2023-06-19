@@ -114,7 +114,7 @@ def remove_prefixes(answers):
         farasa_answers.append(answerToAppend)
     return farasa_answers
 
-# should get rid of all adjust methods and normalize both pred and gold on the fly, if possible (verify)
+
 def adjust_start(org_text, org_word_start):
     '''
     :param org_text: must receive org_text after removing prefixes
@@ -318,7 +318,7 @@ def compute_matchingScores_withSplitting(gold_spans_ranges, pred_spans_ranges, c
                 pred_span_2nd_range = range(overlap2[0], pred_ranges1_crnt[l][-1]+1)
             else:
                 tokens_in_between = list(range_in_between)
-                #tokens_in_between = sorted(tokens_in_between) # verify if needed
+                #tokens_in_between = sorted(tokens_in_between)
                 m = (len(tokens_in_between) // 2)   # integer division
 
                 pred_span_1st_range = range(pred_ranges1_crnt[k][0], tokens_in_between[m])
@@ -337,10 +337,10 @@ def compute_matchingScores_withSplitting(gold_spans_ranges, pred_spans_ranges, c
             split_PredSpans.append(
                         (pred_span_2nd_text,pred_span_2nd_range, gold_spans1[l], gold_ranges1[l], pred_gold_overlaps1[l], rank_2nd))
 
-    #3.1 Sort by rank (verify if needed because the ranks are assigned in order)
+    #3.1 Sort by rank
     sortByKeyOrder = 5
     #split_PredSpans = mySort(split_PredSpans, sortByKeyOrder)
-    split_PredSpans.sort(key=lambda i: i[sortByKeyOrder]) #verify if I should re-assign the list
+    split_PredSpans.sort(key=lambda i: i[sortByKeyOrder])
 
     #3.2 rerank converting float ranks into consecutive integer ranks
     #To convert the above code, no need to introduce another list except the reranked one
@@ -351,11 +351,11 @@ def compute_matchingScores_withSplitting(gold_spans_ranges, pred_spans_ranges, c
         split_PredSpans_reranked.append((v1, v2, v3, v4, v5, newRank))
 
     #3.3 For each split pred_span find maxMatched gold span (as before) but using F1 over range overlap
-    #    Since the stored gold_span information have not been used (so far), verify if they need to be removed from the tuple
+    #    Since the stored gold_span information have not been used (so far)
     split_pred_spans1, split_pred_ranges1, _, _, _, splitRanks1 = zip(*split_PredSpans_reranked)
 
     # Next: Max match each split pred_answer with a gold-answer
-    #       and remove all occurrences of that matched gold answer (must verify)
+    #       and remove all occurrences of that matched gold answer
     unmatched_gold_word_start_postions = list(gold_word_start_postions).copy()
     unmatched_gold_word_end_positions = list(gold_word_end_positions).copy()
     unmatched_gold_spans = list(gold_spans_list).copy()
@@ -364,7 +364,7 @@ def compute_matchingScores_withSplitting(gold_spans_ranges, pred_spans_ranges, c
         maxf1 = 0.0
         maxMatched_gold_span = None
 
-        #verify if needed
+
         if split_pred_span1==None:
             splitMatching_f1Scores.append(
                 (None, None, 0.0, rank))
