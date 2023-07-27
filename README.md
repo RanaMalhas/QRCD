@@ -101,13 +101,13 @@ Note: If you have access to a Cloud TPU that you want to fine-tune/train on, jus
 # How to Cite
 If you use the QRCD dataset and/or the CL-AraBERT model, please cite us as:
 
-@article{malhas2022arabic,
-  title={Arabic machine reading comprehension on the {H}oly {Q}ur’an using {CL-AraBERT}},
-  author={Malhas, Rana and Elsayed, Tamer},
-  journal={Information Processing \& Management},
-  volume={59},
-  number={6},
-  pages={103068},
-  year={2022},
-  publisher={Elsevier}
+@article{malhas2022arabic,  
+  title={Arabic machine reading comprehension on the {H}oly {Q}ur’an using {CL-AraBERT}},  
+  author={Malhas, Rana and Elsayed, Tamer},  
+  journal={Information Processing \& Management},  
+  volume={59},  
+  number={6},  
+  pages={103068},  
+  year={2022},  
+  publisher={Elsevier}  
 }
