@@ -111,3 +111,6 @@ If you use the QRCD dataset and/or the CL-AraBERT model, please cite us as:
   year={2022},  
   publisher={Elsevier}  
 }
+
+## Acknowledgments
+We would like to thank all the Qur’an specialists who contributed to annotating/rating the question-answer pairs, especially Dr. Ahmad Shukri, Professor of Tafseer and Qur’anic Sciences at Qatar University, for his scholarly advice throughout the annotation process of the answers extracted from the Holy Qur'an.
