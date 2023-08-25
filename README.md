@@ -98,7 +98,7 @@ Note: If you have access to a Cloud TPU that you want to fine-tune/train on, jus
   --tpu_name=$TPU_NAME
 ```
 
-# How to Cite
+## How to Cite
 If you use the QRCD dataset and/or the CL-AraBERT model, please cite us as:
 
 @article{malhas2022arabic,  
