@@ -1,7 +1,11 @@
 # *QRCD* (Qur'anic Reading Comprehension Dataset)
-This repository contains information about [*QRCD*](https://github.com/RanaMalhas/QRCD/tree/main/dataset), [CL-AraBERT](https://github.com/RanaMalhas/QRCD/blob/main/README.md#cl-arabert-pre-trained-language-model) (**CL**assical **AraBERT**) pre-trained model and [code](https://github.com/RanaMalhas/QRCD/tree/main/code) for evaluating results on *QRCD*.
+*QRCD_v1.2* is released! It can be downloaded from the [Qur'an QA 2023 repo](https://gitlab.com/bigirqu/quran-qa-2023/-/tree/main).
 
-*QRCD* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below. The dataset in this repo adopts the [SQuAD v1.1 format](https://github.com/facebookresearch/DrQA#format-b). A version in JSONL (JSON lines) format is also available. It can be downloaded from the [Qur'an QA 2022 repo](https://gitlab.com/bigirqu/quranqa/-/tree/main/datasets). 
+This repository contains information about [*QRCD_v1.1*](https://github.com/RanaMalhas/QRCD/tree/main/dataset), [CL-AraBERT](https://github.com/RanaMalhas/QRCD/blob/main/README.md#cl-arabert-pre-trained-language-model) (**CL**assical **AraBERT**) pre-trained model and [code](https://github.com/RanaMalhas/QRCD/tree/main/code) for evaluating results on *QRCD*.
+
+*QRCD_v1.1* is composed of 1,093 tuples of question-passage pairs that are coupled with their extracted answers to constitute 1,337 question-passage-answer triplets. The distribution of the dataset into training and test sets is shown below. The dataset in this repo adopts the [SQuAD v1.1 format](https://github.com/facebookresearch/DrQA#format-b). 
+
+A *QRCD_v1.1* version in JSONL (JSON lines) format is also available. It can be downloaded from the [Qur'an QA 2022 repo](https://gitlab.com/bigirqu/quranqa/-/tree/main/datasets). 
 
 <!-- | **Dataset** | **%** | **# Question-Passage  Pairs** | **# Question-Passage-Answer  Triplets** |
 |-------------|:-----:|:-----------------------------:|:---------------------------------------:|
@@ -11,7 +15,7 @@ This repository contains information about [*QRCD*](https://github.com/RanaMalha
 | All         |  100% |              1,093            |                  1,337                  |
  -->
 
-| Dataset          |**# Question-Passage Pairs**|**# QPA\* triplets for All Questions**|**# QPA triplets for Single-answer Questions**|**#QPA triplets for Multi-answer Questions**|
+| QRCD_v1.1 Dataset          |**# Question-Passage Pairs**|**# QPA\* triplets for All Questions**|**# QPA triplets for Single-answer Questions**|**#QPA triplets for Multi-answer Questions**|
 |------------------|:--------------------------:|:-------------------------:|:---------------------------:|:----------------------------:|       
 | All              |            1093            |        1337               |          949          |             388            |
 | Training         |            819             |        989                |          722          |             268            |
