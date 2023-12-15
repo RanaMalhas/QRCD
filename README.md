@@ -1,5 +1,5 @@
 # *QRCD* (Qur'anic Reading Comprehension Dataset)
-*QRCD_v1.2* is released! It can be downloaded from the [Qur'an QA 2023 repo](https://gitlab.com/bigirqu/quran-qa-2023/-/tree/main).
+*QRCD_v1.2* is released! It can be downloaded from the [Qur'an QA 2023 repo](https://gitlab.com/bigirqu/quran-qa-2023/-/tree/main) at [this link](https://gitlab.com/bigirqu/quran-qa-2023/-/tree/main/Task-B).
 
 This repository contains information about [*QRCD_v1.1*](https://github.com/RanaMalhas/QRCD/tree/main/dataset), [CL-AraBERT](https://github.com/RanaMalhas/QRCD/blob/main/README.md#cl-arabert-pre-trained-language-model) (**CL**assical **AraBERT**) pre-trained model and [code](https://github.com/RanaMalhas/QRCD/tree/main/code) for evaluating results on *QRCD*.
 
