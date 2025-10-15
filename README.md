@@ -36,21 +36,21 @@ Each Qur’anic passage in QRCD may have more than one occurrence; and each pass
 The source of the Qur'anic text in *QRCD* is the [Tanzil project download page](https://tanzil.net/download/), which provides verified versions of the Holy Qur'an in several scripting styles. We have chosen the simple-clean text style of Tanzil version 1.0.2.
 
 # CL-AraBERT Pre-trained Language Model
-Download [CL-AraBERTv0.1](https://www.dropbox.com/sh/9zazklvmtzkg1sv/AADiJuZlfUca-mCJZIELQpwta?dl=0); an AraBERT-based model that is further pre-trained using about 1.05B-word Classical Arabic dataset taken from the [OpenITI corpus](https://github.com/OpenITI/RELEASE).  
+Download [CL-AraBERTv0.1](https://www.dropbox.com/scl/fo/blu8r4ymvd0tbc1xyxj76/ANXFKhpSg4p1fTDDjxLq4Sk?rlkey=rik2xutxjih5ernm72i27rjax&st=s4hz6ijf&dl=0); an AraBERT-based model that is further pre-trained using about 1.05B-word Classical Arabic dataset taken from the [OpenITI corpus](https://github.com/OpenITI/RELEASE).  
 
 ## How to use CL-AraBERT
 Although CL-AraBERT was initially pre-trained for the purpose of developing a machine reading comprehension (MRC) model on the Holy Qur'an, it can easily be exploited for developing *other* NLP tasks on the Holy Qur'an and CA text, such as detecting semantic similarity between Qur'anic verses, and question answering (QA) on Hadith or Exegeses of Qur'an, among others.  
 
-You can easily use CL-AraBERT since it is almost fully compatible with the official AraBERT and BERT codebases. The two minor differences with the offical BERT are in:
-
-* tokenization.py: since we have used the AraBERT codebase, the only difference between AraBERT and BERT is in the tokenization.py file where the function \_is_punctuation was modified to make it compatible the "+" symbol and the "[" and "]" characters as explained [here](https://github.com/aub-mind/arabert/tree/master/arabert#how-to-use).
+You can easily use CL-AraBERT since it is almost fully compatible with the official AraBERT and BERT codebases. The two minor differences with the official BERT are in:
+w
+* tokenization.py: since we have used the AraBERT codebase, the only difference between AraBERT and BERT is in the tokenization.py file, where the function \_is_punctuation was modified to make it compatible with the "+" symbol and the "[" and "]" characters as explained [here](https://github.com/aub-mind/arabert/tree/master/arabert#how-to-use).
 
 * run_squad.py: since our [evaluation script](https://github.com/RanaMalhas/QRCD/blob/main/code/eval_qrcd.py) is based on the start/end token positions of the predicted answer(s), we modified run_squad.py such that it writes out the start/end token positions of each predicted answer span to the answer predictions file (nbest_predictions.json) as well. The modified version is named [run_squad_qrcd.py](https://github.com/RanaMalhas/QRCD/blob/main/code/arabert/run_squad_qrcd.py). 
 
 ### Using CL-AraBERT with *QRCD*
 1. Reformat the train dataset.
 
-Reformatting (or unpooling) is needed for the answer spans of multi-answer questions so that each answer span with its corresponding question and passage (question-passage-answer triplet) is considered a training eample. 
+Reformatting (or unpooling) is needed for the answer spans of multi-answer questions so that each answer span with its corresponding question and passage (question-passage-answer triplet) is considered a training example. 
 
 ```
 python ./code/data_util/transform_to_unpooled_answers_format.py
@@ -101,8 +101,10 @@ Note: If you have access to a Cloud TPU that you want to fine-tune/train on, jus
   --use_tpu=True \
   --tpu_name=$TPU_NAME
 ```
+### Fine-tuned CL-AraBERT
+You can download [five fine-tuned CL-AraBERT models](https://www.dropbox.com/scl/fo/3umboxpbp7rrq4icdj8l2/AIJtoH_ucf-xINW32C7H9Ig?rlkey=cj7h9wmsa6x0hc5zuxhwqkht4&st=24efbh1v&dl=0). Each model was fine-tuned with a different random seed on the same three MRC training datasets — two Modern Standard Arabic (MSA) datasets and the QRCD dataset. The median performance among the five models was reported per evaluation metric in the [paper](https://www.sciencedirect.com/science/article/pii/S0306457322001704). 
 
-## How to Cite
+# How to Cite
 If you use the QRCD dataset and/or the CL-AraBERT model, please cite us as:
 
 @article{malhas2022arabic,  
@@ -116,5 +118,5 @@ If you use the QRCD dataset and/or the CL-AraBERT model, please cite us as:
   publisher={Elsevier}  
 }
 
-## Acknowledgments
+# Acknowledgments
 We would like to thank all the Qur’an specialists who contributed to annotating/rating the question-answer pairs, especially Dr. Ahmad Shukri, Professor of Tafseer and Qur’anic Sciences at Qatar University, for his scholarly advice throughout the annotation process of the answers extracted from the Holy Qur'an.
